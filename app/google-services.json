@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "200258607123",
+    "project_id": "kidsguide-caec2",
+    "storage_bucket": "kidsguide-caec2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:200258607123:android:eafaa0e7e781b07baf87e6",
+        "android_client_info": {
+          "package_name": "com.example.childrenguide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX7r1IRmB9V6F0AFWfOzH0EN-53jL4Mw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
