@@ -78,9 +78,10 @@ fun ChildHomeScreen(navController: NavController) {
 @Composable
 fun LessonCard(title: String, description: String, onClick: () -> Unit) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor =Color(0xFFF3E5F5)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5)),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

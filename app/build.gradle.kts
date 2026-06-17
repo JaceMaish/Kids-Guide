@@ -1,19 +1,17 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services") version "4.4.2" apply false
+    alias(libs.plugins.google.services)
 }
 
 android {
     namespace = "com.example.kidsguide"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.kidsguide"
+        applicationId = "com.example.childrenguide"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 

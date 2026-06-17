@@ -17,12 +17,12 @@ import androidx.navigation.NavController
 val lessons =mapOf(
       "1" to Pair(
           "Reading & Comprehension",
-          "Reading comprehension is the ability to read text, process it and understand its meaning./n/n" +
-          "Key Skills:/n" +
-          "- Understanding the main idea/n" +
-          "- Identifying key details/n" +
-          "- Making inferences/n" +
-          "-Summarizing what you have read/n" +
+          "Reading comprehension is the ability to read text, process it and understand its meaning.\n\n" +
+          "Key Skills:\n" +
+          "- Understanding the main idea\n" +
+          "- Identifying key details\n" +
+          "- Making inferences\n" +
+          "- Summarizing what you have read\n" +
           "Tip: Always try to read a passage twice before answering questions!"
       ),
     "2" to Pair(

@@ -18,11 +18,9 @@ import com.example.kidsguide.ui.screens.parent.ProgressReportScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
-    val navController = rememberNavController()
-
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "role_select"
     ) {
         composable("role_select") {
             RoleSelectScreen(navController)
