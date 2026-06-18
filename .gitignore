@@ -1,15 +1,10 @@
+# Ignore JSON configuration files that may contain sensitive data
+# Google services config
+app/google-services.json
+# Any other JSON files you don't want in version control
+*.json
+# Android Studio local files
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# Build outputs
+/app/build/
