@@ -34,7 +34,7 @@
 
 | Role Selection | Child Home | Parent Dashboard |
 | :---: | :---: | :---: |
-| ![Role Selection](https://via.placeholder.com/200x400?text=Role+Select) | ![Child Home](https://via.placeholder.com/200x400?text=Child+Home) | ![Parent Dashboard](https://via.placeholder.com/200x400?text=Dashboard) |
+| ![Role Selection](assets/app_selection.jpg) | ![Child Home](assets/child.jpg) | ![Parent Dashboard](assets/parent.jpg) |
 
 ---
 

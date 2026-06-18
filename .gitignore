@@ -8,3 +8,4 @@ app/google-services.json
 *.iml
 # Build outputs
 /app/build/
+local.properties
