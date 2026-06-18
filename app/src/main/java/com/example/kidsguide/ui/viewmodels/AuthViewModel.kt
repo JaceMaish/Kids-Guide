@@ -12,6 +12,32 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
     private val _authState = mutableStateOf<AuthState>(AuthState.Idle)
     val authState: State<AuthState> = _authState
 
+    private var cachedUser: User? = null
+
+    init {
+        checkUserSession()
+    }
+
+    private fun checkUserSession() {
+        val currentUser = repository.getCurrentUser()
+        if (currentUser != null) {
+            viewModelScope.launch {
+                val role = repository.getUserRole(currentUser.uid)
+                cachedUser = currentUser.copy(role = role)
+            }
+        }
+    }
+
+    fun tryAutoLogin(selectedRole: String): Boolean {
+        val user = cachedUser
+        return if (user != null && user.role == selectedRole) {
+            _authState.value = AuthState.Success(user)
+            true
+        } else {
+            false
+        }
+    }
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -20,6 +46,18 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
                 _authState.value = AuthState.Success(user)
             }.onFailure { error ->
                 _authState.value = AuthState.Error(error.message ?: "Login failed")
+            }
+        }
+    }
+
+    fun register(email: String, password: String, role: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            val result = repository.register(email, password, role)
+            result.onSuccess { user ->
+                _authState.value = AuthState.Success(user)
+            }.onFailure { error ->
+                _authState.value = AuthState.Error(error.message ?: "Registration failed")
             }
         }
     }

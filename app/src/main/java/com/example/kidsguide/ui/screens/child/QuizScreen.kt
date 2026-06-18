@@ -2,15 +2,20 @@ package com.example.kidsguide.ui.screens.child
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.kidsguide.ui.viewmodels.QuizViewModel
 
 data class QuizQuestion(
     val question: String,
@@ -81,168 +86,251 @@ val quizData = mapOf(
     )
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizScreen(navController: NavController, lessonId: String) {
+fun QuizScreen(
+    navController: NavController,
+    lessonId: String,
+    quizViewModel: QuizViewModel = viewModel()
+) {
     val questions = quizData[lessonId] ?: emptyList()
     var currentQuestion by remember { mutableStateOf(0) }
     var selectedAnswer by remember { mutableStateOf(-1) }
     var score by remember { mutableStateOf(0) }
     var quizFinished by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
+    LaunchedEffect(quizFinished) {
+        if (quizFinished) {
+            quizViewModel.saveResult(lessonId, score, questions.size)
+        }
+    }
 
-        Text(
-            text = "✏️ Quiz Time!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF6200EE)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (!quizFinished) {
-            val question = questions[currentQuestion]
-
-            Text(
-                text = "Question ${currentQuestion + 1} of ${questions.size}",
-                fontSize = 14.sp,
-                color = Color.Gray
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Quiz", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
             )
+        },
+        containerColor = Color(0xFFFBFBFE) // Soft, off-white background
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (!quizFinished) {
+                val question = questions[currentQuestion]
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF3E5F5)
+                LinearProgressIndicator(
+                    progress = { (currentQuestion + 1).toFloat() / questions.size },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = Color(0xFF6200EE),
+                    trackColor = Color(0xFFE0E0E0)
                 )
-            ) {
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Text(
-                    text = question.question,
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
+                    text = "Question ${currentQuestion + 1} of ${questions.size}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Gray
                 )
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            question.options.forEachIndexed { index, option ->
-                val bgColor = when {
-                    selectedAnswer == -1 -> Color.White
-                    index == question.correctAnswer -> Color(0xFF4CAF50)
-                    index == selectedAnswer -> Color(0xFFE53935)
-                    else -> Color.White
-                }
-
-                Button(
-                    onClick = {
-                        if (selectedAnswer == -1) {
-                            selectedAnswer = index
-                            if (index == question.correctAnswer) score++
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = bgColor)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Text(
-                        text = option,
-                        color = if (bgColor == Color.White) Color.Black else Color.White,
-                        fontSize = 15.sp
+                        text = question.question,
+                        modifier = Modifier.padding(24.dp),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            if (selectedAnswer != -1) {
-                Button(
-                    onClick = {
-                        if (currentQuestion < questions.size - 1) {
-                            currentQuestion++
-                            selectedAnswer = -1
-                        } else {
-                            quizFinished = true
+                question.options.forEachIndexed { index, option ->
+                    val isCorrect = index == question.correctAnswer
+                    val isSelected = index == selectedAnswer
+                    
+                    val containerColor = when {
+                        selectedAnswer == -1 -> Color.White
+                        isCorrect -> Color(0xFFE8F5E9) // Soft green
+                        isSelected -> Color(0xFFFFEBEE) // Soft red
+                        else -> Color.White
+                    }
+                    
+                    val contentColor = when {
+                        selectedAnswer == -1 -> Color.DarkGray
+                        isCorrect -> Color(0xFF2E7D32)
+                        isSelected -> Color(0xFFC62828)
+                        else -> Color.LightGray
+                    }
+
+                    val borderColor = when {
+                        selectedAnswer == -1 -> Color(0xFFEEEEEE)
+                        isCorrect -> Color(0xFF4CAF50)
+                        isSelected -> Color(0xFFE53935)
+                        else -> Color(0xFFEEEEEE)
+                    }
+
+                    Surface(
+                        onClick = {
+                            if (selectedAnswer == -1) {
+                                selectedAnswer = index
+                                if (isCorrect) score++
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = containerColor,
+                        border = androidx.compose.foundation.BorderStroke(2.dp, borderColor),
+                        shadowElevation = if (selectedAnswer == -1) 1.dp else 0.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${'A' + index}.",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = contentColor
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = option,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = contentColor
+                            )
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(55.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF6200EE)
-                    )
-                ) {
-                    Text(
-                        text = if (currentQuestion < questions.size - 1)
-                            "Next Question →" else "See Results 🎉",
-                        fontSize = 16.sp
-                    )
+                    }
                 }
-            }
 
-        } else {
-            // Results Screen
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
-            Text(
-                text = "🎉 Quiz Complete!",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF6200EE)
-            )
+                if (selectedAnswer != -1) {
+                    Button(
+                        onClick = {
+                            if (currentQuestion < questions.size - 1) {
+                                currentQuestion++
+                                selectedAnswer = -1
+                            } else {
+                                quizFinished = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF6200EE)
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                    ) {
+                        Text(
+                            text = if (currentQuestion < questions.size - 1)
+                                "Next Question →" else "Finish Quiz 🎉",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            } else {
+                // Results Screen
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Surface(
+                        modifier = Modifier.size(120.dp),
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = Color(0xFF6200EE).copy(alpha = 0.1f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(text = "🎯", fontSize = 64.sp)
+                        }
+                    }
 
-            Text(
-                text = "Your Score",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
+                    Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = "$score / ${questions.size}",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (score == questions.size) Color(0xFF4CAF50) else Color(0xFF6200EE)
-            )
+                    Text(
+                        text = "Quiz Complete!",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF6200EE)
+                    )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = when {
-                    score == questions.size -> "Perfect Score! 🌟"
-                    score >= questions.size / 2 -> "Good Job! Keep it up! 👍"
-                    else -> "Keep practicing! You can do it! 💪"
-                },
-                fontSize = 18.sp,
-                color = Color.Gray
-            )
+                    Text(
+                        text = "You scored",
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = "$score / ${questions.size}",
+                        fontSize = 64.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (score == questions.size) Color(0xFF4CAF50) else Color(0xFF6200EE)
+                    )
 
-            Button(
-                onClick = { navController.navigate("child_home") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6200EE)
-                )
-            ) {
-                Text(text = "Back to Lessons 📚", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = when {
+                            score == questions.size -> "Perfect Score! You're a star! 🌟"
+                            score >= questions.size / 2 -> "Great effort! Keep it up! 👍"
+                            else -> "Don't give up! Keep practicing! 💪"
+                        },
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.DarkGray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    Button(
+                        onClick = { navController.navigate("child_home") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF6200EE)
+                        )
+                    ) {
+                        Text(text = "Back to Adventures 🚀", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
     }

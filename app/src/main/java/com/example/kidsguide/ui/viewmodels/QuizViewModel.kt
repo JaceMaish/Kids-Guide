@@ -9,6 +9,11 @@ import com.example.kidsguide.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class QuizViewModel(private val repository: AuthRepository = AuthRepository()) : ViewModel() {
+    init {
+        repository.observeQuizResults { results ->
+            _quizResults.value = results
+        }
+    }
     private val _quizResults = mutableStateOf<List<QuizResult>>(emptyList())
     val quizResults: State<List<QuizResult>> = _quizResults
 
@@ -25,9 +30,6 @@ class QuizViewModel(private val repository: AuthRepository = AuthRepository()) :
         }
     }
 
-    fun fetchAllResults() {
-        viewModelScope.launch {
-            _quizResults.value = repository.getChildResults()
-        }
-    }
+    // Real-time updates are handled via observeQuizResults in init block.
+    // The fetchAllResults method is no longer needed.
 }
